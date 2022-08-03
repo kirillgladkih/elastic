@@ -132,7 +132,6 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
      */
     private function parse(array $searchable, array $filter)
     {
-        dd($filter);
         foreach ($searchable as $logicType => $searchTypes) {
 
             foreach ($searchTypes as $searchType => $items) {
