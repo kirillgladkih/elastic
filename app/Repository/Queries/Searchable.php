@@ -1,27 +1,16 @@
 <?php
 
 namespace App\Repository\Queries;
+
+use App\Repository\Queries\Interfaces\LogicOperator;
+use App\Repository\Queries\Interfaces\SearchType;
+use Exception;
+
 /**
  * This class is searchable collection
  */
-class Searchable
+class Searchable implements LogicOperator, SearchType
 {
-    /**
-     * Search type match
-     */
-    const SEARCH_TYPE_MATCH = "match";
-    /**
-     * Search type multi match
-     */
-    const SEARCH_TYPE_MULTI_MATCH = "multi_match";
-    /**
-     * Search type term
-     */
-    const SEARCH_TYPE_TERM = "term";
-    /**
-     * Search type multi term
-     */
-    const SEARCH_TYPE_MULTI_TERM = "multi_term";
     /**
      * Search array
      *
@@ -29,15 +18,28 @@ class Searchable
      */
     protected array $search = [];
     /**
+     * Allow logic operator
+     */
+    const ALLOW_LOGIC_OPERATORS = [
+        self::LOGIC_OPERATOR_AND,
+        self::LOGIC_OPERATOR_NOT,
+        self::LOGIC_OPERATOR_OR
+    ];
+    /**
      * Full text match
      *
      * @param string $searchable
      * @param string $value
+     * @param string $logic operator
+     * @throws Exception
      * @return \App\Repository\Queris\Searchable
      */
-    public function fullTextMatch(string $searchable, string $value)
+    public function fullTextMatch(string $searchable, string $value, string $logicOperator = self::LOGIC_OPERATOR_AND)
     {
-        $this->search[self::SEARCH_TYPE_MATCH][$searchable] = $value;
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->search[$logicOperator][self::SEARCH_TYPE_MATCH][$searchable] = $value;
 
         return $this;
     }
@@ -46,12 +48,16 @@ class Searchable
      *
      * @param array $searchables
      * @param string $value
+     * @param string $logic operator
+     * @throws Exception
      * @return \App\Repository\Queris\Searchable
      */
-    public function fullTextMultiMatch(array $searchables, string $value)
+    public function fullTextMultiMatch(array $searchables, string $value, string $logicOperator = self::LOGIC_OPERATOR_AND)
     {
-        foreach ($searchables as $searchable)
-            $this->search[self::SEARCH_TYPE_MULTI_MATCH][$searchable] = $value;
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->search[$logicOperator][self::SEARCH_TYPE_MULTI_MATCH] = ["value" => $value, "searchables" => $searchables];
 
         return $this;
     }
@@ -60,25 +66,16 @@ class Searchable
      *
      * @param string $searchable
      * @param string $value
+     * @param string $logic operator
+     * @throws Exception
      * @return \App\Repository\Queris\Searchable
      */
-    public function termMatch(string $searchable, string $value)
+    public function termMatch(string $searchable, string $value, string $logicOperator = self::LOGIC_OPERATOR_AND)
     {
-        $this->search[self::SEARCH_TYPE_TERM][$searchable] = $value;
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
 
-        return $this;
-    }
-    /**
-     * Term multi match
-     *
-     * @param array $searchables
-     * @param string $value
-     * @return \App\Repository\Queris\Searchable
-     */
-    public function termMultiMatch(array $searchables, string $value)
-    {
-        foreach ($searchables as $searchable)
-            $this->search[self::SEARCH_TYPE_MULTI_TERM][$searchable] = $value;
+        $this->search[$logicOperator][self::SEARCH_TYPE_TERM][$searchable] = $value;
 
         return $this;
     }

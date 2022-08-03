@@ -86,7 +86,12 @@ abstract class ARepository
      */
     public function get()
     {
-        $this->queryService->searchable()->termMatch("ff", "ff");
+        // $this->queryService->searchable()->fullTextMatch("title", "a");
+        // $this->queryService->searchable()->fullTextMatch("tags", "scala");
+
+        $this->searchable()->fullTextMultiMatch(["title", "tags"], "php a");
+
+        $this->filter()->less("created_at", date("Y-m-d"), "date");
 
         $this->execute();
 

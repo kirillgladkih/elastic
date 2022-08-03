@@ -3,6 +3,9 @@
 namespace App\Repository\Queries\Elastic;
 
 use App\Repository\Queries\Filter;
+use App\Repository\Queries\Interfaces\FilterType;
+use App\Repository\Queries\Interfaces\LogicOperator;
+use App\Repository\Queries\Interfaces\SearchType;
 use App\Repository\Queries\QueryService;
 use App\Repository\Queries\Searchable;
 use Exception;
@@ -10,7 +13,7 @@ use Exception;
 /**
  * This implementation query service
  */
-class ElasticService extends QueryService
+class ElasticService extends QueryService implements SearchType, FilterType, LogicOperator
 {
     /**
      * Elastic client
@@ -106,15 +109,53 @@ class ElasticService extends QueryService
 
         $filter = $this->filter->get();
 
+        $body = $this->parse($searchable, $filter);
+
         $response = $this->client->search([
             "index" => $this->index,
             "type" => $this->type,
-            "size" => $this->size
+            "size" => $this->size,
+            "body" => $body
         ]);
 
         foreach ($response["hits"]["hits"] as $item)
             $ids[] = $item["_source"]["id"];
 
         return $ids ?? [];
+    }
+    /**
+     * Parse filter and searchable for elastic api
+     *
+     * @param array $searchable
+     * @param array $filter
+     * @return void
+     */
+    private function parse(array $searchable, array $filter)
+    {
+        dd($filter);
+        foreach ($searchable as $logicType => $searchTypes) {
+
+            foreach ($searchTypes as $searchType => $items) {
+
+                if (in_array($searchType, [self::SEARCH_TYPE_MATCH, self::SEARCH_TYPE_TERM])) {
+
+                    foreach ($items as $key => $item) {
+
+                        $body["query"]["bool"][$logicType][] = [$searchType => [$key => $item]];
+                    }
+                }
+
+                if($searchType == self::SEARCH_TYPE_MULTI_MATCH){
+
+                    $body["query"]["bool"][$logicType][$searchType] = [
+                        "fields" => $items["searchables"],
+                        "query" => $items["value"]
+                    ];
+
+                }
+            }
+        }
+
+        return $body;
     }
 }

@@ -2,48 +2,16 @@
 
 namespace App\Repository\Queries;
 
+use App\Repository\Queries\Interfaces\FilterType;
+use App\Repository\Queries\Interfaces\LogicOperator;
+use App\Repository\Queries\Interfaces\OperatorType;
 use Exception;
+
 /**
  * This class is filter collection
  */
-class Filter
+class Filter implements FilterType, OperatorType, LogicOperator
 {
-    /**
-     * Filter type string
-     */
-    const FILTER_TYPE_STRING = "string";
-    /**
-     * Filter type date
-     */
-    const FILTER_TYPE_DATE = "date";
-    /**
-     * Filter type integer
-     */
-    const FILTER_TYPE_NUMERIC = "numeric";
-    /**
-     * Filter operator most
-     */
-    const OPERATOR_TYPE_MORE = ">";
-    /**
-     * Filter operator less
-     */
-    const OPERATOR_TYPE_LESS = "<";
-    /**
-     * Filter operator more or equal
-     */
-    const OPERATOR_TYPE_MORE_OR_EQUAL = ">=";
-    /**
-     * Filter operator less or equal
-     */
-    const OPERATOR_TYPE_LESS_OR_EQUAL = "<=";
-    /**
-     * Filter operator type equal
-     */
-    const OPERATOR_TYPE_EQUAL = "=";
-    /**
-     * Filter operator not equal
-     */
-    const OPERATOR_TYPE_NOT_EQUAL = "!=";
     /**
      * Allow types
      */
@@ -64,6 +32,14 @@ class Filter
         self::OPERATOR_TYPE_NOT_EQUAL
     ];
     /**
+     * Allow logic operator
+     */
+    const ALLOW_LOGIC_OPERATORS = [
+        self::LOGIC_OPERATOR_AND,
+        self::LOGIC_OPERATOR_NOT,
+        self::LOGIC_OPERATOR_OR
+    ];
+    /**
      * Filter
      *
      * @var array
@@ -75,15 +51,22 @@ class Filter
      * @param string $name
      * @param string $value
      * @param string $type
-     * @throws Exception
-     * @return \App\Repository\Queris\Filter
+     * @param string $logicOperator
+     * @return void
      */
-    public function equal(string $name, string $value, string $type = self::FILTER_TYPE_STRING)
-    {
+    public function equal(
+        string $name,
+        string $value,
+        string $type = self::FILTER_TYPE_STRING,
+        string $logicOperator = self::LOGIC_OPERATOR_AND
+    ) {
         if (!in_array($type, self::ALLOW_TYPES))
             throw new Exception("{$type} is not allowed");
 
-        $this->filter[$type][self::OPERATOR_TYPE_EQUAL] = [$name => $value];
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_EQUAL] = [$name => $value];
 
         return $this;
     }
@@ -93,15 +76,23 @@ class Filter
      * @param string $name
      * @param string $value
      * @param string $type
+     * @param string $logicOperator
      * @throws Exception
      * @return \App\Repository\Queris\Filter
      */
-    public function notEqual(string $name, string $value, string $type = self::FILTER_TYPE_STRING)
-    {
+    public function notEqual(
+        string $name,
+        string $value,
+        string $type = self::FILTER_TYPE_STRING,
+        string $logicOperator = self::LOGIC_OPERATOR_AND
+    ) {
         if (!in_array($type, self::ALLOW_TYPES))
             throw new Exception("{$type} is not allowed");
 
-        $this->filter[$type][self::OPERATOR_TYPE_NOT_EQUAL] = [$name => $value];
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_NOT_EQUAL] = [$name => $value];
 
         return $this;
     }
@@ -112,80 +103,116 @@ class Filter
      * @param string $value
      * @param string $reference
      * @param string $type
+     * @param string $logicOperator
      * @throws Exception
      * @return \App\Repository\Queris\Filter
      */
-    public function less(string $name, string $value, string $reference, string $type = self::FILTER_TYPE_NUMERIC)
-    {
-        $ref = array_udiff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
-
+    public function less(
+        string $name,
+        string $value,
+        string $reference,
+        string $type = self::FILTER_TYPE_NUMERIC,
+        string $logicOperator = self::LOGIC_OPERATOR_AND
+    ) {
+        $ref = array_diff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
+        dd($type);
         if (!in_array($type, $ref))
             throw new Exception("{$type} is not allowed");
 
-        $this->filter[$type][self::OPERATOR_TYPE_LESS] = [$name => ["value" => $value, "reference" => $reference]];
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS] = [$name => ["value" => $value, "reference" => $reference]];
 
         return $this;
     }
-     /**
+    /**
      * Less
      *
      * @param string $name
      * @param string $value
      * @param string $reference
      * @param string $type
+     * @param string $logicOperator
      * @throws Exception
      * @return \App\Repository\Queris\Filter
      */
-    public function more(string $name, string $value, string $reference, string $type = self::FILTER_TYPE_NUMERIC)
-    {
-        $ref = array_udiff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
+    public function more(
+        string $name,
+        string $value,
+        string $reference,
+        string $type = self::FILTER_TYPE_NUMERIC,
+        string $logicOperator = self::LOGIC_OPERATOR_AND
+    ) {
+        $ref = array_diff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
 
         if (!in_array($type, $ref))
             throw new Exception("{$type} is not allowed");
 
-        $this->filter[$type][self::OPERATOR_TYPE_MORE] = [$name => ["value" => $value, "reference" => $reference]];
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE] = [$name => ["value" => $value, "reference" => $reference]];
 
         return $this;
     }
-     /**
+    /**
      * Less
      *
      * @param string $name
      * @param string $value
      * @param string $reference
      * @param string $type
+     * @param string $logicOperator
      * @throws Exception
      * @return \App\Repository\Queris\Filter
      */
-    public function lessOrEqual(string $name, string $value, string $reference, string $type = self::FILTER_TYPE_NUMERIC)
-    {
-        $ref = array_udiff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
+    public function lessOrEqual(
+        string $name,
+        string $value,
+        string $reference,
+        string $type = self::FILTER_TYPE_NUMERIC,
+        string $logicOperator = self::LOGIC_OPERATOR_AND
+    ) {
+        $ref = array_diff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
 
         if (!in_array($type, $ref))
             throw new Exception("{$type} is not allowed");
 
-        $this->filter[$type][self::OPERATOR_TYPE_LESS_OR_EQUAL] = [$name => ["value" => $value, "reference" => $reference]];
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS_OR_EQUAL] = [$name => ["value" => $value, "reference" => $reference]];
 
         return $this;
     }
-     /**
+    /**
      * Less
      *
      * @param string $name
      * @param string $value
      * @param string $reference
      * @param string $type
+     * @param string $logicOperator
      * @throws Exception
      * @return \App\Repository\Queris\Filter
      */
-    public function moreOrEqual(string $name, string $value, string $reference, string $type = self::FILTER_TYPE_NUMERIC)
-    {
-        $ref = array_udiff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
+    public function moreOrEqual(
+        string $name,
+        string $value,
+        string $reference,
+        string $type = self::FILTER_TYPE_NUMERIC,
+        string $logicOperator = self::LOGIC_OPERATOR_AND
+    ) {
+        $ref = array_diff([self::FILTER_TYPE_STRING], self::ALLOW_TYPES) ?? [];
 
         if (!in_array($type, $ref))
             throw new Exception("{$type} is not allowed");
 
-        $this->filter[$type][self::OPERATOR_TYPE_MORE_OR_EQUAL] = [$name => ["value" => $value, "reference" => $reference]];
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE_OR_EQUAL] = [$name => ["value" => $value, "reference" => $reference]];
 
         return $this;
     }
