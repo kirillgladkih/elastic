@@ -18,13 +18,4 @@ class ArticleRepository extends ARepository
     {
         return new Article();
     }
-    /**
-     * Get search searvice
-     *
-     * @return SearchInterface
-     */
-    protected function getSearchService(): SearchInterface
-    {
-        return new Elastic(resolve(\Elastic\Elasticsearch\Client::class));
-    }
 }

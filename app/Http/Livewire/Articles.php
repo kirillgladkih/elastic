@@ -6,6 +6,9 @@ use App\Models\Article;
 use App\Models\User;
 use App\Repository\ArticleRepository;
 use Livewire\Component;
+use Spatie\ElasticsearchQueryBuilder\Builder as ElasticsearchQueryBuilderBuilder;
+use Spatie\ElasticsearchQueryBuilder\Queries\BoolQuery;
+use Spatie\ElasticsearchQueryBuilder\Queries\MatchQuery;
 
 class Articles extends Component
 {
@@ -20,18 +23,33 @@ class Articles extends Component
 
     public function getItems()
     {
-        $query = !empty($this->search)
-            ? $this->repository->search($this->search, "tags")
-            : $this->repository->all();
+        $this->repository->get();
 
-        return $query->paginate(200);
+        // // $query = !empty($this->search)
+        // //     ? $this->repository->search($this->search, "tags")
+        // //     : $this->repository->all();
+        // $client = resolve(\Elastic\Elasticsearch\Client::class);
+
+        // $response = $client->search([
+        //             'index' => "articles",
+        //             'type' => "articles",
+        //             // 'size' => "100",
+        //             'body' => [
+        //             ],
+        //         ]);
+
+        // dd($response["hits"]);
+
+        // $query =  $this->repository->all();
+
+        // return $query->paginate(200);
 
     }
     public function render()
     {
         return view('livewire.articles', [
             "articles" => $this->getItems(),
-            "users" => User::all()
+            "users" => User::all(),
         ]);
     }
 }

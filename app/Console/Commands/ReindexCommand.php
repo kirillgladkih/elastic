@@ -47,6 +47,10 @@ class ReindexCommand extends Command
     {
         $models = config("indexing.models");
 
+        $fails = [];
+
+        $complete = [];
+
         if (count($models) < 1)
             $this->error("nothing indexing");
 
@@ -54,17 +58,36 @@ class ReindexCommand extends Command
 
             foreach ($model::cursor() as $item) {
 
-                $this->client->index([
+                $message = "{$model} id: {$item->id} index: {$item->getSearchIndex()} type: {$item->getSearchType()} ";
+
+                $response = $this->client->index([
                     'index' => $item->getSearchIndex(),
                     'type' => $item->getSearchType(),
                     'id' => $item->getKey(),
                     'body' => $item->toSearchArray(),
                 ]);
 
-                $this->output->write($model . " " . "id: " . $item->id . " indexing\n");
+                if ($response->getStatusCode() == 200) {
+
+                    $complete[] = $message . "indexing";
+
+                }else{
+
+                    $fails[] = $message . "fail";
+
+                }
             }
         }
 
-        $this->info("DONE!");
+        $this->output->write("fails: ", true);
+        $this->output->write($fails, true);
+        $this->output->write("complete: ", true);
+        $this->output->write($complete, true);
+
+        $this->info(
+            "Done"
+            . " complete count: " . count($complete)
+            . " fails count: " . count($fails)
+        );
     }
 }

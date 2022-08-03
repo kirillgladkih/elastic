@@ -2,8 +2,13 @@
 
 namespace App\Repository;
 
-use App\Repository\Search\SearchInterface;
+use App\Repository\Queries\Elastic\ElasticService;
+use App\Repository\Queries\Filter;
+use App\Repository\Queries\QueryService;
+use App\Repository\Queries\Searchable;
+use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * Abstract repository class
@@ -17,49 +22,81 @@ abstract class ARepository
      */
     abstract protected function start(): Model;
     /**
-     * Get search service
+     * This query builder
      *
-     * @return SearchInterface
+     * @var \Illuminate\Database\Eloquent\Builder
      */
-    abstract protected function getSearchService(): SearchInterface;
+    protected \Illuminate\Database\Eloquent\Builder $builder;
     /**
-     * Get all
+     * This query service
      *
-     * @return Illuminate\Database\Eloquent\Builder
+     * @var \App\Repository\Queries\QueryService
      */
-    public function all(): \Illuminate\Database\Eloquent\Builder
+    protected \App\Repository\Queries\QueryService $queryService;
+    /**
+     * Init
+     */
+    public function __construct()
     {
-        return $this->start()->where("id", ">", "0");
+        $this->builder = $this->start()->where("id", ">", "0");
+        $this->queryService = $this->getQueryService();
     }
     /**
-     * Multi search
+     * Get query service
      *
-     * @return Illuminate\Database\Eloquent\Builder
+     * @return QueryService
      */
-    public function multiSearch(string $query = "")
+    protected function getQueryService(): QueryService
     {
-        $items = $this->getSearchService()
-            ->multiSearch($query, $this->start(), $this->start()::$searchables ?? []);
+        /* here the strategy for connecting the service should be implemented */
+        $hosts = config("app.search.hosts");
 
-        foreach ($items as $item)
-            $ids[] = $item["id"];
+        $client = ClientBuilder::create()->setHosts($hosts)->build();
 
-        return $this->start()->whereIn("id", $ids ?? []);
+        $service = new ElasticService($client);
+
+        $service->index($this->start()->getSearchType())
+            ->type($this->start()->getSearchIndex())
+            ->size($this->start()->select("id")->count());
+
+        return $service;
     }
     /**
-     * Search
+     * Get filter
      *
-     * @param string $query
-     * @return Illuminate\Database\Eloquent\Builder
+     * @return \App\Repository\Queries\Filter
      */
-    public function search(string $query = "", string $searchable = "")
+    public function filter()
     {
-        $items = $this->getSearchService()
-            ->search($query, $this->start(), $searchable);
+        return $this->queryService->filter();
+    }
+    /**
+     * Get searchable
+     *
+     * @return \App\Repository\Queries\Searchable
+     */
+    public function searchable()
+    {
+        return $this->queryService->searchable();
+    }
+    /**
+     * Get
+     *
+     * @return void
+     */
+    public function get()
+    {
+        $this->queryService->searchable()->termMatch("ff", "ff");
 
-        foreach ($items as $item)
-            $ids[] = $item["id"];
+        $this->execute();
 
-        return $this->start()->whereIn("id", $ids ?? []);
+        return $this->builder->get();
+    }
+
+    protected function execute()
+    {
+        $ids = $this->queryService->execute();
+
+        $this->builder = $this->builder->whereIn("id", $ids);
     }
 }
