@@ -17,7 +17,6 @@ class Filter implements FilterType, OperatorType, LogicOperator
      */
     const ALLOW_TYPES = [
         self::FILTER_TYPE_DATE,
-        self::FILTER_TYPE_STRING,
         self::FILTER_TYPE_NUMERIC
     ];
     /**
@@ -67,7 +66,7 @@ class Filter implements FilterType, OperatorType, LogicOperator
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS] = [$name => $value];
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS][$name] = $value;
 
         return $this;
     }
@@ -87,15 +86,13 @@ class Filter implements FilterType, OperatorType, LogicOperator
         string $type = self::FILTER_TYPE_NUMERIC,
         string $logicOperator = self::LOGIC_OPERATOR_AND
     ) {
-        $ref = array_diff(self::ALLOW_TYPES, [self::FILTER_TYPE_STRING]);
-
-        if (!in_array($type, $ref))
+        if (!in_array($type, self::ALLOW_TYPES))
             throw new Exception("{$type} is not allowed");
 
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE] = [$name => $value];
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE][$name] = $value;;
 
         return $this;
     }
@@ -115,15 +112,13 @@ class Filter implements FilterType, OperatorType, LogicOperator
         string $type = self::FILTER_TYPE_NUMERIC,
         string $logicOperator = self::LOGIC_OPERATOR_AND
     ) {
-        $ref = array_diff(self::ALLOW_TYPES, [self::FILTER_TYPE_STRING]);
-
-        if (!in_array($type, $ref))
+        if (!in_array($type, self::ALLOW_TYPES))
             throw new Exception("{$type} is not allowed");
 
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS_OR_EQUAL] = [$name => $value];
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS_OR_EQUAL][$name] = $value;
 
         return $this;
     }
@@ -143,15 +138,13 @@ class Filter implements FilterType, OperatorType, LogicOperator
         string $type = self::FILTER_TYPE_NUMERIC,
         string $logicOperator = self::LOGIC_OPERATOR_AND
     ) {
-        $ref = array_diff(self::ALLOW_TYPES, [self::FILTER_TYPE_STRING]);
-
-        if (!in_array($type, $ref))
+        if (!in_array($type, self::ALLOW_TYPES))
             throw new Exception("{$type} is not allowed");
 
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE_OR_EQUAL] = [$name => $value];
+        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE_OR_EQUAL][$name] = $value;
 
         return $this;
     }

@@ -2,11 +2,6 @@
 
 namespace App\Repository;
 
-use App\Repository\Queries\Elastic\ElasticService;
-use App\Repository\Queries\Filter;
-use App\Repository\Queries\QueryService;
-use App\Repository\Queries\Searchable;
-use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -28,80 +23,31 @@ abstract class ARepository
      */
     protected \Illuminate\Database\Eloquent\Builder $builder;
     /**
-     * This query service
-     *
-     * @var \App\Repository\Queries\QueryService
-     */
-    protected \App\Repository\Queries\QueryService $queryService;
-    /**
      * Init
      */
     public function __construct()
     {
         $this->builder = $this->start()->where("id", ">", "0");
-        $this->queryService = $this->getQueryService();
     }
     /**
-     * Get query service
+     * Replace builder
      *
-     * @return QueryService
+     * @param \Illuminate\Database\Eloquent\Builder $builder
+     * @return \App\Repository\ARepository
      */
-    protected function getQueryService(): QueryService
+    public function replaceBuilder(\Illuminate\Database\Eloquent\Builder $builder)
     {
-        /* here the strategy for connecting the service should be implemented */
-        $hosts = config("app.search.hosts");
+        $this->builder = $builder;
 
-        $client = ClientBuilder::create()->setHosts($hosts)->build();
-
-        $service = new ElasticService($client);
-
-        $service->index($this->start()->getSearchType())
-            ->type($this->start()->getSearchIndex())
-            ->size($this->start()->select("id")->count());
-
-        return $service;
+        return $this;
     }
     /**
-     * Get filter
+     * Get collection result
      *
-     * @return \App\Repository\Queries\Filter
+     * @return \Illuminate\Support\Collection
      */
-    public function filter()
+    public function get(): \Illuminate\Support\Collection
     {
-        return $this->queryService->filter();
-    }
-    /**
-     * Get searchable
-     *
-     * @return \App\Repository\Queries\Searchable
-     */
-    public function searchable()
-    {
-        return $this->queryService->searchable();
-    }
-    /**
-     * Get
-     *
-     * @return void
-     */
-    public function get()
-    {
-        // $this->queryService->searchable()->fullTextMatch("title", "a");
-        // $this->queryService->searchable()->fullTextMatch("tags", "scala");
-
-        $this->searchable()->fullTextMultiMatch(["title", "tags"], "php a");
-
-        $this->filter()->less("created_at", date("Y-m-d"), "date");
-
-        $this->execute();
-
         return $this->builder->get();
-    }
-
-    protected function execute()
-    {
-        $ids = $this->queryService->execute();
-
-        $this->builder = $this->builder->whereIn("id", $ids);
     }
 }

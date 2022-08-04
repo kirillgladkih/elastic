@@ -104,20 +104,20 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
     {
         if (is_null($this->index) || is_null($this->type))
             throw new Exception("index or type was not defined use the 'index' and 'type' methods");
-
+        /* Получение массива поиска */
         $searchable = $this->searchable->get();
-
+        /* Получение массива фильтров */
         $filter = $this->filter->get();
-
+        /* Парсинг для того, чтобы скормить еластику */
         $body = $this->parse($searchable, $filter);
-
+        /* Получение ответа от еластика */
         $response = $this->client->search([
             "index" => $this->index,
             "type" => $this->type,
             "size" => $this->size,
             "body" => $body
         ]);
-
+        /* Парсинг id , чтобы передать их в репозиторий */
         foreach ($response["hits"]["hits"] as $item)
             $ids[] = $item["_source"]["id"];
 
@@ -128,33 +128,36 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
      *
      * @param array $searchable
      * @param array $filter
-     * @return void
+     * @return array
      */
     private function parse(array $searchable, array $filter)
     {
+        /* Соотвествие */
         foreach ($searchable as $logicType => $searchTypes) {
-
             foreach ($searchTypes as $searchType => $items) {
-
-                if (in_array($searchType, [self::SEARCH_TYPE_MATCH, self::SEARCH_TYPE_TERM])) {
-
-                    foreach ($items as $key => $item) {
-
+                /* Полнотесвтовый поиск или точное соответсвие */
+                if (in_array($searchType, [self::SEARCH_TYPE_MATCH, self::SEARCH_TYPE_TERM]))
+                    foreach ($items as $key => $item)
                         $body["query"]["bool"][$logicType][] = [$searchType => [$key => $item]];
-                    }
-                }
-
-                if($searchType == self::SEARCH_TYPE_MULTI_MATCH){
-
-                    $body["query"]["bool"][$logicType][$searchType] = [
-                        "fields" => $items["searchables"],
-                        "query" => $items["value"]
+                /* Полнотестовый поиск по полям */
+                if ($searchType == self::SEARCH_TYPE_MULTI_MATCH)
+                    $body["query"]["bool"][$logicType][] = [
+                        $searchType => ["fields" => $items["searchables"],
+                        "query" => $items["value"]]
                     ];
-
-                }
+                /* Точное соответсвие по масиву */
+                if ($searchType == self::SEARCH_TYPE_MULTI_TERM)
+                    foreach($items as $item)
+                        $body["query"]["bool"][$logicType][] = ["terms" => [$item["searchable"] => $item["values"]]];
             }
         }
+        /* Фильтры */
+        foreach ($filter as $logicType => $searchTypes)
+            foreach ($searchTypes as $searchType => $items)
+                foreach ($items as $operator => $item)
+                    foreach ($item as $key => $value)
+                        $body["query"]["bool"][$logicType][] = ["range" => [$key => [$operator => $value]]];
 
-        return $body;
+        return $body ?? [];
     }
 }

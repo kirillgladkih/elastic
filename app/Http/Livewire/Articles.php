@@ -23,26 +23,28 @@ class Articles extends Component
 
     public function getItems()
     {
-        $this->repository->get();
+        dd(Article::where("id", "1"));
 
-        // // $query = !empty($this->search)
-        // //     ? $this->repository->search($this->search, "tags")
-        // //     : $this->repository->all();
-        // $client = resolve(\Elastic\Elasticsearch\Client::class);
+        // $this->repository->get();
 
-        // $response = $client->search([
-        //             'index' => "articles",
-        //             'type' => "articles",
-        //             // 'size' => "100",
-        //             'body' => [
-        //             ],
-        //         ]);
+        // // // $query = !empty($this->search)
+        // // //     ? $this->repository->search($this->search, "tags")
+        // // //     : $this->repository->all();
+        // // $client = resolve(\Elastic\Elasticsearch\Client::class);
 
-        // dd($response["hits"]);
+        // // $response = $client->search([
+        // //             'index' => "articles",
+        // //             'type' => "articles",
+        // //             // 'size' => "100",
+        // //             'body' => [
+        // //             ],
+        // //         ]);
 
-        // $query =  $this->repository->all();
+        // // dd($response["hits"]);
 
-        // return $query->paginate(200);
+        // // $query =  $this->repository->all();
+
+        // // return $query->paginate(200);
 
     }
     public function render()

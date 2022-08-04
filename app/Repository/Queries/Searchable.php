@@ -80,6 +80,24 @@ class Searchable implements LogicOperator, SearchType
         return $this;
     }
     /**
+     * Term match
+     *
+     * @param string $searchable
+     * @param array $values
+     * @param string $logic operator
+     * @throws Exception
+     * @return \App\Repository\Queris\Searchable
+     */
+    public function termMultiMatch(string $searchable, array $values, string $logicOperator = self::LOGIC_OPERATOR_AND)
+    {
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+
+        $this->search[$logicOperator][self::SEARCH_TYPE_MULTI_TERM][] = ["values" => $values, "searchable" => $searchable];
+
+        return $this;
+    }
+    /**
      * Get search array
      *
      * @return array
