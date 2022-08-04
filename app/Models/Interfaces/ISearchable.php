@@ -22,4 +22,10 @@ interface ISearchable
      * @return array
      */
     public function toSearchArray();
+    /**
+     * Get mappginh
+     *
+     * @return array
+     */
+    public function getMapp(): array;
 }

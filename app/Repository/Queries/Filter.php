@@ -66,7 +66,8 @@ class Filter implements FilterType, OperatorType, LogicOperator
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS][$name] = $value;
+        if (!empty($value) && !empty($name))
+            $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS][$name] = $value;
 
         return $this;
     }
@@ -92,7 +93,8 @@ class Filter implements FilterType, OperatorType, LogicOperator
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE][$name] = $value;;
+        if (!empty($value) && !empty($name))
+            $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE][$name] = $value;;
 
         return $this;
     }
@@ -118,7 +120,8 @@ class Filter implements FilterType, OperatorType, LogicOperator
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS_OR_EQUAL][$name] = $value;
+        if (!empty($value) && !empty($name))
+            $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_LESS_OR_EQUAL][$name] = $value;
 
         return $this;
     }
@@ -144,7 +147,8 @@ class Filter implements FilterType, OperatorType, LogicOperator
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE_OR_EQUAL][$name] = $value;
+        if (!empty($value) && !empty($name))
+            $this->filter[$logicOperator][$type][self::OPERATOR_TYPE_MORE_OR_EQUAL][$name] = $value;
 
         return $this;
     }

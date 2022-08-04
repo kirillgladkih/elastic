@@ -37,4 +37,22 @@ class Article extends Model implements ISearchable
     {
         return $this->belongsTo(User::class);
     }
+    public function toSearchArray()
+    {
+        $data = $this->toArray();
+
+        foreach($this->user()->first()->toArray() as $key => $value)
+            $data["user_" . $key] = $value;
+
+        return $data;
+    }
+    /**
+     * Get mapping
+     *
+     * @return array
+     */
+    public function getMapp(): array
+    {
+        return [];
+    }
 }

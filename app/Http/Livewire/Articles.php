@@ -5,6 +5,8 @@ namespace App\Http\Livewire;
 use App\Models\Article;
 use App\Models\User;
 use App\Repository\ArticleRepository;
+use App\Repository\Queries\Interfaces\LogicOperator;
+use App\Repository\SearchRepository;
 use Livewire\Component;
 use Spatie\ElasticsearchQueryBuilder\Builder as ElasticsearchQueryBuilderBuilder;
 use Spatie\ElasticsearchQueryBuilder\Queries\BoolQuery;
@@ -12,19 +14,20 @@ use Spatie\ElasticsearchQueryBuilder\Queries\MatchQuery;
 
 class Articles extends Component
 {
-    public $search = "";
-
     protected $repository;
+
+    public $requires = [];
 
     public function __construct()
     {
-        $this->repository = new ArticleRepository();
+        $this->repository = new SearchRepository(new Article());
     }
 
     public function getItems()
     {
-        dd(Article::where("id", "1"));
+        $this->repository->searchable()->fullTextMultiMatch(["title"], $this->requires["search"]["multisearch"] ?? "");
 
+        return $this->repository->get();
         // $this->repository->get();
 
         // // // $query = !empty($this->search)

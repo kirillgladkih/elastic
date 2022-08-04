@@ -4,7 +4,7 @@
         <div class="card-body">
             <div class="mb-3 row">
                 <div class="col-12 mb-3">
-                    <input type="text" wire:model="search" class="form-control" placeholder="search">
+                    <input type="text" wire:model="requires.search.multisearch" class="form-control" placeholder="search">
                 </div>
                 <div class="col-12">
                     <label for="" class="form-label">Сортировка по пользователю</label>

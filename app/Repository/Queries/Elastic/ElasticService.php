@@ -141,9 +141,10 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
                         $body["query"]["bool"][$logicType][] = [$searchType => [$key => $item]];
                 /* Полнотестовый поиск по полям */
                 if ($searchType == self::SEARCH_TYPE_MULTI_MATCH)
+                foreach($items as $item)
                     $body["query"]["bool"][$logicType][] = [
-                        $searchType => ["fields" => $items["searchables"],
-                        "query" => $items["value"]]
+                        $searchType => ["fields" => $item["searchables"],
+                        "query" => $item["value"]]
                     ];
                 /* Точное соответсвие по масиву */
                 if ($searchType == self::SEARCH_TYPE_MULTI_TERM)

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Console\Command;
 
 class ReindexCommand extends Command
@@ -31,11 +32,13 @@ class ReindexCommand extends Command
      *
      * @return void
      */
-    public function __construct(Client $client)
+    public function __construct()
     {
         parent::__construct();
 
-        $this->client = $client;
+        $hosts = config("app.search.hosts");
+
+        $this->client =  ClientBuilder::create()->setHosts($hosts)->build();;
     }
 
     /**
@@ -86,7 +89,7 @@ class ReindexCommand extends Command
 
         $this->info(
             "Done"
-            . " complete count: " . count($complete)
+            . "complete count: " . count($complete)
             . " fails count: " . count($fails)
         );
     }

@@ -80,6 +80,15 @@ class SearchRepository
     {
         $ids = $this->queryService->execute();
 
-        return $this->model->whereId("id", $ids);
+        return $this->model->whereIn("id", $ids);
+    }
+    /**
+     * Get collection result
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function get(): \Illuminate\Support\Collection
+    {
+        return $this->getBuilder()->get();
     }
 }

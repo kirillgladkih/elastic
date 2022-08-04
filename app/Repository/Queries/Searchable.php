@@ -39,7 +39,8 @@ class Searchable implements LogicOperator, SearchType
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->search[$logicOperator][self::SEARCH_TYPE_MATCH][$searchable] = $value;
+        if (!empty($value) && !empty($searchable))
+            $this->search[$logicOperator][self::SEARCH_TYPE_MATCH][$searchable] = $value;
 
         return $this;
     }
@@ -57,7 +58,8 @@ class Searchable implements LogicOperator, SearchType
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->search[$logicOperator][self::SEARCH_TYPE_MULTI_MATCH] = ["value" => $value, "searchables" => $searchables];
+        if (!empty($value) && !empty($searchables))
+            $this->search[$logicOperator][self::SEARCH_TYPE_MULTI_MATCH][] = ["value" => $value, "searchables" => $searchables];
 
         return $this;
     }
@@ -75,7 +77,8 @@ class Searchable implements LogicOperator, SearchType
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->search[$logicOperator][self::SEARCH_TYPE_TERM][$searchable] = $value;
+        if (!empty($value) && !empty($searchable))
+            $this->search[$logicOperator][self::SEARCH_TYPE_TERM][$searchable] = $value;
 
         return $this;
     }
@@ -93,7 +96,8 @@ class Searchable implements LogicOperator, SearchType
         if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
             throw new Exception("not allowed logic operator");
 
-        $this->search[$logicOperator][self::SEARCH_TYPE_MULTI_TERM][] = ["values" => $values, "searchable" => $searchable];
+        if (!empty($values) && !empty($searchable))
+            $this->search[$logicOperator][self::SEARCH_TYPE_MULTI_TERM][] = ["values" => $values, "searchable" => $searchable];
 
         return $this;
     }
