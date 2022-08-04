@@ -8,7 +8,7 @@
                 </div>
                 <div class="col-12">
                     <label for="" class="form-label">Сортировка по пользователю</label>
-                    <select class="form-select">
+                    <select class="form-select" wire:model="requires.filter.user_id">
                         @foreach ($users as $user)
                             <option value="{{ $user->id }}">
                                 {{ $user->name . " " . $user->id }}

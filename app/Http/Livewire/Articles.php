@@ -25,8 +25,8 @@ class Articles extends Component
 
     public function getItems()
     {
-        $this->repository->searchable()->fullTextMultiMatch(["title"], $this->requires["search"]["multisearch"] ?? "");
-
+        $this->repository->searchable()->fullTextMultiMatch(["title", "user_name"], strtolower($this->requires["search"]["multisearch"] ?? ""));
+        $this->repository->searchable()->termMatch("user_id", strtolower($this->requires["filter"]["user_id"] ?? ""));
         return $this->repository->get();
         // $this->repository->get();
 
