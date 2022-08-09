@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Models\Article;
 use App\Models\Interfaces\ISearchable;
 use App\Repository\Queries\Elastic\ElasticService;
 use App\Repository\Queries\QueryService;

@@ -102,6 +102,31 @@ class Searchable implements LogicOperator, SearchType
         return $this;
     }
     /**
+     * Term logic match
+     *
+     * @param string $searchable
+     * @param string $value
+     * @param string $logicForTermMatch
+     * @param string $logicOperator
+     * @return \App\Repository\Queris\Searchable
+     */
+    public function logicTermMatch(string $searchable, string $value, string $logicForTermMatch = self::LOGIC_OPERATOR_FOR_TERM_OR, string $logicOperator = self::LOGIC_OPERATOR_AND)
+    {
+        if (!in_array($logicOperator, self::ALLOW_LOGIC_OPERATORS))
+            throw new Exception("not allowed logic operator");
+        if (!in_array($logicForTermMatch, [self::LOGIC_OPERATOR_FOR_TERM_AND, self::LOGIC_OPERATOR_FOR_TERM_OR]))
+            throw new Exception("not allowed logic operator");
+
+        if (!empty($value) && !empty($searchable))
+            $this->search[$logicOperator][self::SEARCH_TYPE_LOGIC_TERM][] = [
+                "searchable" => $searchable,
+                "value" => $value,
+                "operator" => $logicForTermMatch
+            ];
+
+        return $this;
+    }
+    /**
      * Get search array
      *
      * @return array

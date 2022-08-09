@@ -16,4 +16,12 @@ interface LogicOperator
      * Not operator
      */
     const LOGIC_OPERATOR_NOT = "must_not";
+     /**
+     * Logic for term match and
+     */
+    const LOGIC_OPERATOR_FOR_TERM_AND = "and";
+    /**
+     * Logic for term match or
+     */
+    const LOGIC_OPERATOR_FOR_TERM_OR = "or";
 }

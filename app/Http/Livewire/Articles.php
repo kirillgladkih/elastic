@@ -7,6 +7,9 @@ use App\Models\User;
 use App\Repository\ArticleRepository;
 use App\Repository\Queries\Interfaces\LogicOperator;
 use App\Repository\SearchRepository;
+use Elastic\Elasticsearch\Transport\Adapter\Guzzle;
+use Facade\FlareClient\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 use Spatie\ElasticsearchQueryBuilder\Builder as ElasticsearchQueryBuilderBuilder;
 use Spatie\ElasticsearchQueryBuilder\Queries\BoolQuery;
@@ -25,8 +28,12 @@ class Articles extends Component
 
     public function getItems()
     {
-        $this->repository->searchable()->fullTextMultiMatch(["title", "user_name"], strtolower($this->requires["search"]["multisearch"] ?? ""));
-        $this->repository->searchable()->termMatch("user_id", strtolower($this->requires["filter"]["user_id"] ?? ""));
+        // $response = Http::get("https://p2p.binance.com/ru/trade/sell/SHIB?fiat=RUB&payment=Tinkoff");
+        // dd($response->body());
+        $this->repository->searchable()->logicTermMatch("title", $this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_FOR_TERM_OR);
+        // $this->repository->searchable()->termMatch("title",$this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_OR);
+        // $this->repository->searchable()->termMatch("title",$this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_OR);
+        // $this->repository->searchable()->termMatch("user_id", strtolower($this->requires["filter"]["user_id"] ?? ""));
         return $this->repository->get();
         // $this->repository->get();
 

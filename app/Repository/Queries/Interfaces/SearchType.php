@@ -20,4 +20,8 @@ interface SearchType
      * Search type multi term
      */
     const SEARCH_TYPE_MULTI_TERM = "multi_term";
+    /**
+     * Search logic term
+     */
+    const SEARCH_TYPE_LOGIC_TERM = "logic_term";
 }

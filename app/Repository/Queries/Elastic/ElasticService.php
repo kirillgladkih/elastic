@@ -115,7 +115,7 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
             "index" => $this->index,
             "type" => $this->type,
             "size" => $this->size,
-            "body" => $body
+            "body" => $body ?? []
         ]);
         /* Парсинг id , чтобы передать их в репозиторий */
         foreach ($response["hits"]["hits"] as $item)
@@ -141,14 +141,27 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
                         $body["query"]["bool"][$logicType][] = [$searchType => [$key => $item]];
                 /* Полнотестовый поиск по полям */
                 if ($searchType == self::SEARCH_TYPE_MULTI_MATCH)
-                foreach($items as $item)
-                    $body["query"]["bool"][$logicType][] = [
-                        $searchType => ["fields" => $item["searchables"],
-                        "query" => $item["value"]]
-                    ];
+                    foreach ($items as $item)
+                        $body["query"]["bool"][$logicType][] = [
+                            $searchType => [
+                                "fields" => $item["searchables"],
+                                "query" => $item["value"]
+                            ]
+                        ];
+                /* Точное соответсвие токенизатор по условию */
+                if ($searchType == self::SEARCH_TYPE_LOGIC_TERM)
+                    foreach ($items as $item)
+                        $body["query"]["bool"][$logicType][] = [
+                            "match" => [
+                                $item["searchable"] => [
+                                    "query" => $item["value"],
+                                    "operator" => $item["operator"]
+                                ]
+                            ]
+                        ];
                 /* Точное соответсвие по масиву */
                 if ($searchType == self::SEARCH_TYPE_MULTI_TERM)
-                    foreach($items as $item)
+                    foreach ($items as $item)
                         $body["query"]["bool"][$logicType][] = ["terms" => [$item["searchable"] => $item["values"]]];
             }
         }
@@ -158,7 +171,6 @@ class ElasticService extends QueryService implements SearchType, FilterType, Log
                 foreach ($items as $operator => $item)
                     foreach ($item as $key => $value)
                         $body["query"]["bool"][$logicType][] = ["range" => [$key => [$operator => $value]]];
-
         return $body ?? [];
     }
 }

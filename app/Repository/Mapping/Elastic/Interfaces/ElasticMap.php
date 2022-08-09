@@ -2,32 +2,16 @@
 
 namespace App\Repository\Mapping\Elastic\Interfaces;
 
+use Illuminate\Database\Eloquent\Model;
+
 interface ElasticMap
 {
     /**
-     * Text for an inexact match type
+     * Get settings
+     *
+     * @return array
      */
-    const MAP_TYPE_TEXT = "text";
-    /**
-     * Integer type
-     */
-    const MAP_TYPE_INTEGER = "integer";
-    /**
-     * Date type
-     */
-    const MAP_TYPE_DATE = "date";
-    /**
-     * Text for for an exact match or array type
-     */
-    const MAP_TYPE_KEYWORD = "keyword";
-    /**
-     * Boolean type
-     */
-    const MAP_TYPE_BOOLEAN = "boolean";
-    /**
-     * Type for autocomplete
-     */
-    const MAP_TYPE_COMPLETION = "completion";
+    public function settings(): array;
     /**
      * Get index
      *
@@ -41,9 +25,16 @@ interface ElasticMap
      */
     public function type(): string;
     /**
+     * Model class
+     *
+     * @return string
+     */
+    public function model(): string;
+    /**
      * Get source for document
      *
+     * @param Model model
      * @return array
      */
-    public function source(): array;
+    public function source(Model $model): array;
 }

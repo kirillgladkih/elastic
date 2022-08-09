@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Article;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Console\Command;
@@ -48,36 +49,57 @@ class ReindexCommand extends Command
      */
     public function handle()
     {
-        $models = config("indexing.models");
+        $mapping = config("mapping.elastic");
 
         $fails = [];
 
         $complete = [];
 
-        if (count($models) < 1)
+        if (count($mapping) < 1)
             $this->error("nothing indexing");
 
-        foreach ($models as $model) {
+        foreach ($mapping as $mapItem) {
 
+            $map = new $mapItem();
+
+            $model = $map->model();
+
+            $params = [
+                'index' => $map->index(),
+                'type' => $map->type(),
+            ];
+            $this->client->indices()->delete($params);
+            // /**
+            //  * Exists index
+            //  */
+            // $existsCode = $this->client->indices()->exists($params)->getStatusCode();
+            // /**
+            //  * Create index if not exists
+            //  */
+            // if ($existsCode == 404) {
+                $this->client->indices()->create(array_merge($params, [
+                    "body" => ["settings" => $map->settings()
+                    , "mappings" => ["properties" => $map->map()]
+                    ]
+                ]));
+            // }
+            /**
+             * Indexing documents
+             */
             foreach ($model::cursor() as $item) {
 
-                $message = "{$model} id: {$item->id} index: {$item->getSearchIndex()} type: {$item->getSearchType()} ";
+                $message = "{$model} id: {$item->id} index: {$map->index()} type: {$map->type()} ";
 
-                $response = $this->client->index([
-                    'index' => $item->getSearchIndex(),
-                    'type' => $item->getSearchType(),
-                    'id' => $item->getKey(),
-                    'body' => $item->toSearchArray(),
-                ]);
+                $params["id"] = $item->id;
 
-                if ($response->getStatusCode() == 200) {
+                $response = $this->client->index(array_merge($params, ["body" => $map->source($item)]));
 
-                    $complete[] = $message . "indexing";
+                if ($response->getStatusCode() == 200 || $response->getStatusCode() == 201) {
 
-                }else{
+                    $complete[] = $message . "indexing ";
+                } else {
 
-                    $fails[] = $message . "fail";
-
+                    $fails[] = $message . "fail ";
                 }
             }
         }
@@ -88,9 +110,9 @@ class ReindexCommand extends Command
         $this->output->write($complete, true);
 
         $this->info(
-            "Done"
-            . "complete count: " . count($complete)
-            . " fails count: " . count($fails)
+            "Done "
+                . "complete count: " . count($complete)
+                . " fails count: " . count($fails)
         );
     }
 }

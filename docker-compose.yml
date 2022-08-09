@@ -61,7 +61,7 @@ services:
             - discovery.type=single-node
             - xpack.security.enabled=false
             - bootstrap.memory_lock=true
-            - "ES_JAVA_OPTS=-Xmx100m -Xms100m"
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
         ports:
             - '9200:9200'
             - '9300:9300'
