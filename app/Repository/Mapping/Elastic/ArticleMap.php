@@ -117,6 +117,11 @@ class ArticleMap extends Map implements ElasticMap
     {
         $attr = $model->attributesToArray();
 
+        $tagsCollection = $model->tags();
+
+        foreach($tagsCollection as $tag)
+            $tags[] = $tag->name;
+
         return [
             "title" => $attr["title"],
             "body" => $attr["body"],

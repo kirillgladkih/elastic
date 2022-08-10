@@ -37,6 +37,18 @@ class Article extends Model implements ISearchable
     {
         return $this->belongsTo(User::class);
     }
+    /**
+     * Get tags
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function tags()
+    {
+        $tags = $this->tags ?? [];
+
+        return Tag::whereIn("id", $tags)->get();
+    }
+
     public function toSearchArray()
     {
         $data = $this->toArray();

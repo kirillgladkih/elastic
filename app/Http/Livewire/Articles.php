@@ -3,10 +3,13 @@
 namespace App\Http\Livewire;
 
 use App\Models\Article;
+use App\Models\Tag;
 use App\Models\User;
 use App\Repository\ArticleRepository;
+use App\Repository\Queries\Interfaces\FilterType;
 use App\Repository\Queries\Interfaces\LogicOperator;
 use App\Repository\SearchRepository;
+use Carbon\Carbon;
 use Elastic\Elasticsearch\Transport\Adapter\Guzzle;
 use Facade\FlareClient\Http\Response;
 use Illuminate\Support\Facades\Http;
@@ -28,40 +31,25 @@ class Articles extends Component
 
     public function getItems()
     {
-        // $response = Http::get("https://p2p.binance.com/ru/trade/sell/SHIB?fiat=RUB&payment=Tinkoff");
-        // dd($response->body());
-        $this->repository->searchable()->logicTermMatch("title", $this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_FOR_TERM_OR);
-        // $this->repository->searchable()->termMatch("title",$this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_OR);
-        // $this->repository->searchable()->termMatch("title",$this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_OR);
-        // $this->repository->searchable()->termMatch("user_id", strtolower($this->requires["filter"]["user_id"] ?? ""));
+        /* Поиск по названию с кастомным анализатором, который разбивыет каждое слово на n-граммы */
+        $this->repository->searchable()->logicTermMatch("title", $this->requires["search"]["multisearch"] ?? "", LogicOperator::LOGIC_OPERATOR_FOR_TERM_OR, LogicOperator::LOGIC_OPERATOR_AND);
+        /* Поиск по user_id */
+        $this->repository->searchable()->termMultiMatch("user_id", $this->requires["filter"]["users_id"] ?? []);
+        /* Поиск по tag_id */
+        $this->repository->searchable()->termMultiMatch("tags", $this->requires["filter"]["tags_id"] ?? []);
+        /* Фильтр по дате */
+        $this->repository->filter()->moreOrEqual("created_at", $this->requires["filter"]["date_before"] ?? "", FilterType::FILTER_TYPE_DATE);
+        /* Фильтр по дате */
+        $this->repository->filter()->lessOrEqual("created_at", $this->requires["filter"]["date_after"] ?? "", FilterType::FILTER_TYPE_DATE);
+
         return $this->repository->get();
-        // $this->repository->get();
-
-        // // // $query = !empty($this->search)
-        // // //     ? $this->repository->search($this->search, "tags")
-        // // //     : $this->repository->all();
-        // // $client = resolve(\Elastic\Elasticsearch\Client::class);
-
-        // // $response = $client->search([
-        // //             'index' => "articles",
-        // //             'type' => "articles",
-        // //             // 'size' => "100",
-        // //             'body' => [
-        // //             ],
-        // //         ]);
-
-        // // dd($response["hits"]);
-
-        // // $query =  $this->repository->all();
-
-        // // return $query->paginate(200);
-
     }
     public function render()
     {
         return view('livewire.articles', [
             "articles" => $this->getItems(),
             "users" => User::all(),
+            "tags" => Tag::all()
         ]);
     }
 }

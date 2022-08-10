@@ -31,6 +31,12 @@ interface ElasticMap
      */
     public function model(): string;
     /**
+     * Get map
+     *
+     * @return array
+     */
+    public function map(): array;
+    /**
      * Get source for document
      *
      * @param Model model

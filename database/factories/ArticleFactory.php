@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Tag;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ArticleFactory extends Factory
@@ -14,10 +16,19 @@ class ArticleFactory extends Factory
      */
     public function definition()
     {
-        $tags = collect(["js", "php", "c#", "ruby", "scala", "c++"])
+        $tags = Tag::all("id")->toArray();
+
+        $tags = collect($tags)
             ->random(3)
             ->values()
             ->all();
+
+        $tagResult = [];
+
+        foreach($tags as $tag)
+            $tagResult[] = $tag["id"];
+
+        $created_at = Carbon::today()->subDays(rand(0, 365))->toString();
 
         $max = User::where("id", ">", 0)->count();
 
@@ -26,8 +37,9 @@ class ArticleFactory extends Factory
         return [
             "body" => $this->faker->text(),
             "title" => $this->faker->text(20),
-            "tags" => $tags,
-            "user_id" => $id
+            "tags" => $tagResult,
+            "user_id" => $id,
+            "created_at" => $created_at
         ];
     }
 }
